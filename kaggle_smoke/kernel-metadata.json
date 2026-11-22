@@ -1,0 +1,17 @@
+{
+  "id": "sreeharshak101/vehicle-classification-cnn-smoke",
+  "title": "Vehicle Classification CNN Smoke",
+  "code_file": "run_kaggle.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": "true",
+  "enable_gpu": "true",
+  "enable_tpu": "false",
+  "enable_internet": "true",
+  "dataset_sources": [
+    "sreeharshak101/vehicle-classification-cnn-src",
+    "sreeharshak101/vehicle-classification-images"
+  ],
+  "competition_sources": [],
+  "kernel_sources": []
+}
