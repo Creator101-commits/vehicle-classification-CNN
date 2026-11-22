@@ -1,0 +1,15 @@
+{
+  "zip_sha256": "acddb78fe1865dc053d77e5f553c5773c333bf17d7cb6b529f3ff519ffa9d1d9",
+  "n_images": 26378,
+  "classes": {
+    "Bicycle": 1618,
+    "Bus": 2133,
+    "Car": 6781,
+    "Motorcycle": 2986,
+    "NonVehicles": 8968,
+    "Taxi": 748,
+    "Truck": 2033,
+    "Van": 1111
+  },
+  "aggregate_sha256": "515fff84f5d983f59ca83ed70b4a9b424e10b224052944660b23567e99cf31b0"
+}
