@@ -70,26 +70,14 @@ def _git_sha(proj: Path) -> str:
 
 
 def _find_dataset_dir(proj: Path) -> Path:
-    """Locate the mounted image dataset directory or zip."""
-    candidates = [
-        p
-        for p in sorted(KAGGLE_INPUT.iterdir())
-        if p.is_dir() and "vehicle-classification-images" in p.name
-    ]
-    if candidates:
-        return candidates[0]
-    zips = [
-        p
-        for p in KAGGLE_INPUT.rglob("*.zip")
-        if "vehicle_classification" in p.name
-    ]
-    if zips:
-        return zips[0].parent
-    # Fallback: any input dir containing class-like subdirectories.
-    for child in sorted(KAGGLE_INPUT.iterdir()):
-        if child.is_dir() and child.name != proj.parent.name:
-            return child
-    raise FileNotFoundError(f"image dataset not found under {KAGGLE_INPUT}")
+    """Locate the mounted image dataset directory."""
+    from vehicle_cnn.data.fingerprint import (  # noqa: PLC0415
+        locate_input_dataset,
+    )
+
+    return locate_input_dataset(
+        KAGGLE_INPUT, "vehicle-classification-images", "sreeharshak101"
+    )
 
 
 def _report_projection(result: dict) -> None:

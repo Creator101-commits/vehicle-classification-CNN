@@ -82,6 +82,34 @@ def discover_classes(root: Path) -> dict[str, Path]:
     return classes
 
 
+def locate_input_dataset(input_root: Path, slug: str, owner: str) -> Path:
+    """Find a Kaggle-mounted dataset directory by slug and owner.
+
+    Kaggle mounts datasets under ``input_root/datasets/<owner>/<slug>``
+    or, on older layouts, directly as ``input_root/<slug>``. The first
+    existing directory wins; there is intentionally no fallback to an
+    arbitrary input directory, which would silently pick the wrong data.
+    """
+    candidates = [
+        input_root / "datasets" / owner / slug,
+        input_root / slug,
+        *sorted(input_root.glob(f"datasets/*/{slug}")),
+    ]
+    for cand in candidates:
+        if cand.is_dir():
+            return cand
+    seen = sorted(
+        p.relative_to(input_root).as_posix()
+        for depth in range(1, 4)
+        for p in input_root.glob("/".join(["*"] * depth))
+        if p.is_dir()
+    )
+    raise FileNotFoundError(
+        f"dataset {owner}/{slug} not found under {input_root}; "
+        f"directories present (depth <= 3): {seen}"
+    )
+
+
 def find_dataset_root(input_dir: Path, extract_dir: Path) -> Path:
     """Locate the class-directory root under a Kaggle input mount.
 
