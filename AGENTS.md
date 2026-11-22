@@ -32,9 +32,10 @@ uv run mypy src
   lines plus per-class counts and the original zip sha256, committed as
   `data/fingerprint.json` after the smoke run and asserted in the full
   run.
-- pHash near-duplicates (thresholds 0/2/4/6/8, pick the largest whose
-  largest component is at most 5% of images) are grouped so no
-  component crosses a split; zero cross-split edges is asserted.
+- pHash near-duplicates are audited at thresholds 0/2/4/6/8, but only
+  6, 4, 2, 0 are selectable (8 is stats-only); pick the largest whose
+  largest component is at most 5% of images. Components are grouped so
+  no component crosses a split; zero cross-split edges is asserted.
 - All models: AdamW, batch 256, lr 1e-3 scratch / 3e-4 pretrained,
   weight decay 0.05, cosine schedule, 1 warmup epoch, label smoothing
   0.1, AMP fp16, early stop on val macro-F1 (patience 8 scratch / 4
