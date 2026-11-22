@@ -99,7 +99,18 @@ def _report_projection(result: dict) -> None:
     print("=== SMOKE TIMINGS ===", flush=True)
     for k, v in timings.items():
         print(f"{k}: {v:.1f}s", flush=True)
-    print(f"total: {man.get('total_seconds')}s", flush=True)
+    proj = man.get("smoke_projection")
+    if proj:
+        print("=== FULL-RUN GPU PROJECTION ===", flush=True)
+        print(f"train scale: {proj['train_scale']:.2f}x", flush=True)
+        for kind, p in proj["per_kind"].items():
+            print(
+                f"{kind}: epoch~{p['full_epoch_s_est']:.1f}s "
+                f"x{p['planned_runs']} runs x{p['planned_epochs']} ep "
+                f"= {p['gpu_hours']:.2f} GPU-h",
+                flush=True,
+            )
+        print(f"TOTAL projected GPU-hours: {proj['total_gpu_hours']:.2f}", flush=True)
 
 
 def main() -> None:

@@ -236,6 +236,7 @@ def run_benchmark(
 
     # --- 2. Decode train/val (orig + harmonized), subset for smoke. ---
     t0 = time.time()
+    full_train_n = len(train_idx)
     if smoke:
         train_idx = _subset(train_idx, cfg.smoke_train_cap, cfg.seed)
         val_idx = _subset(val_idx, cfg.smoke_val_cap, cfg.seed)
@@ -572,6 +573,50 @@ def run_benchmark(
     gpu_seconds = float(
         sum(r.result.train_seconds for r in runs)
     )
+    smoke_projection: dict[str, Any] | None = None
+    if smoke:
+        # Extrapolate smoke epoch times to the full train size and the
+        # full run's planned epochs/seed counts.
+        epoch_times: dict[str, list[float]] = {}
+        for r in [*runs, *choice_runs.values()]:
+            ep = max(r.result.epochs_run, 1)
+            epoch_times.setdefault(r.kind, []).append(
+                r.result.train_seconds / ep
+            )
+        scale = full_train_n / max(1, len(train_idx))
+        planned_epochs = {
+            "custom": 40,
+            "resnet_scratch": 40,
+            "resnet_pretrained": 15,
+        }
+        planned_runs = {
+            "custom": 8,  # 2 choice + 2 custom_A + 3 custom_B + 1 inflation
+            "resnet_scratch": 3,
+            "resnet_pretrained": 3,
+        }
+        per_kind: dict[str, Any] = {}
+        total_hours = 0.0
+        for kind, times in epoch_times.items():
+            epoch_full = float(np.median(times)) * scale
+            hours = (
+                planned_runs[kind] * epoch_full * planned_epochs[kind] / 3600.0
+            )
+            per_kind[kind] = {
+                "smoke_epoch_s": float(np.median(times)),
+                "full_epoch_s_est": epoch_full,
+                "planned_epochs": planned_epochs[kind],
+                "planned_runs": planned_runs[kind],
+                "gpu_hours": hours,
+            }
+            total_hours += hours
+        smoke_projection = {
+            "train_scale": scale,
+            "full_train_n": full_train_n,
+            "smoke_train_n": int(len(train_idx)),
+            "per_kind": per_kind,
+            "total_gpu_hours": total_hours,
+            "note": "upper bound at max epochs; early stopping lowers it",
+        }
     manifest = {
         "protocol": PROTOCOL,
         "git_sha": git_sha,
@@ -594,6 +639,7 @@ def run_benchmark(
         "pretrained_weight_sha256": pretrained_sha,
         "n_boot": n_boot,
         "seed": cfg.seed,
+        "smoke_projection": smoke_projection,
     }
 
     metrics = {
