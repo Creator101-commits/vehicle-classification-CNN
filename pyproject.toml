@@ -1,0 +1,61 @@
+[project]
+name = "vehicle-classification-cnn"
+version = "0.1.0"
+description = "Reproducible vehicle classification CNN benchmark with grouped leakage controls."
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Sreeharsha Kannegundla" }]
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "torch>=2.4",
+    "torchvision>=0.19",
+    "pillow>=10.4",
+    "numpy>=2.1",
+    "scipy>=1.14",
+    "scikit-learn>=1.5",
+    "imagehash>=4.3",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-cov>=5.0",
+    "ruff>=0.6",
+    "mypy>=1.11",
+]
+
+[build-system]
+requires = ["uv_build>=0.8"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "vehicle_cnn"
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+torchvision = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=vehicle_cnn --cov-report=term-missing"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src"]
+ignore_missing_imports = true
+
+[tool.coverage.run]
+branch = true
