@@ -1,0 +1,49 @@
+{
+  "protocol": "vehicle-cnn-benchmark-v1",
+  "git_sha": "85fcf2a20b76ff777df1f68bca82f130d0eb503a",
+  "smoke": false,
+  "ordering_ok": true,
+  "card_write_epoch": 1795390183.2908127,
+  "first_test_read_epoch": 1795390187.0784597,
+  "gpu": "Tesla T4",
+  "gpu_seconds_train": 5077.3314254283905,
+  "timings_s": {
+    "fingerprint": 1190.592,
+    "audit_split": 25.387,
+    "jpeg_forensics": 12.391,
+    "decode_train_val": 18.508,
+    "weight_choice": 208.599,
+    "training": 4984.945,
+    "decode_test": 3.788,
+    "decode_random_test": 1.693,
+    "eval_grouped": 14.882,
+    "eval_inflation": 0.19,
+    "bootstrap": 51.553
+  },
+  "total_seconds": 6512.661,
+  "n_images": 26378,
+  "classes": [
+    "Bicycle",
+    "Bus",
+    "Car",
+    "Motorcycle",
+    "NonVehicles",
+    "Taxi",
+    "Truck",
+    "Van"
+  ],
+  "nonvehicle_class": "NonVehicles",
+  "threshold": 6,
+  "split_counts": {
+    "train": 18465,
+    "val": 3958,
+    "test": 3955
+  },
+  "weighting": "unweighted",
+  "jpeg_quality": 75,
+  "jpeg_subsampling": 2,
+  "pretrained_weight_sha256": "f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec",
+  "n_boot": 2000,
+  "seed": 42,
+  "smoke_projection": null
+}
