@@ -42,7 +42,14 @@ def main() -> None:
     names = metrics["per_class_names"]
     manifest = json.loads((RESULTS / "manifest.json").read_text())
 
-    fig, axes = plt.subplots(2, 2, figsize=(13, 9))
+    fig = plt.figure(figsize=(13, 9))
+    gs = fig.add_gridspec(2, 2)
+    gs_b = gs[0, 1].subgridspec(1, 2, wspace=0.08)
+    ax_a = fig.add_subplot(gs[0, 0])
+    ax_r = fig.add_subplot(gs_b[0])
+    ax_f = fig.add_subplot(gs_b[1])
+    ax_c = fig.add_subplot(gs[1, 0])
+    ax_d = fig.add_subplot(gs[1, 1])
     fig.suptitle(
         f"vehicle-cnn-benchmark-v1, git {manifest['git_sha'][:7]}, "
         f"grouped split, unweighted",
@@ -50,7 +57,7 @@ def main() -> None:
     )
 
     # (a) test macro-F1 per family: per-seed points + seed-0 bootstrap CI.
-    ax = axes[0, 0]
+    ax = ax_a
     for xi, (key, _label) in enumerate(FAMILIES):
         vals = per_seed[key]["macro_f1"]["per_seed"]
         xs = np.full(len(vals), xi) + np.linspace(-0.12, 0.12, len(vals))
@@ -61,7 +68,7 @@ def main() -> None:
             [xi], [ci["point"]],
             yerr=[[ci["point"] - ci["ci_low"]], [ci["ci_high"] - ci["point"]]],
             fmt="D", color="#c0392b", markersize=7, capsize=5,
-            label="seed-0 mean + 95% CI" if xi == 0 else None,
+            label="seed-0 estimate + 95% cluster-bootstrap CI" if xi == 0 else None,
         )
         ax.annotate(
             f"{ci['point']:.3f}", (xi, ci["ci_high"] + 0.004),
@@ -74,44 +81,44 @@ def main() -> None:
     ax.legend(fontsize=7, loc="lower right")
     ax.set_ylim(0.74, 0.88)
 
-    # (b) format-shortcut 2x2: NonVehicles recall and macro-F1.
-    ax = axes[0, 1]
+    # (b) format-shortcut check: two side-by-side strip plots, one per
+    # metric, per-seed points for each of the 4 test conditions.
     conds = [
-        ("arm_A_test_orig", "A / orig"),
-        ("arm_A_test_harmonized", "A / harmonized"),
-        ("arm_B_test_orig", "B / orig"),
-        ("arm_B_test_harmonized", "B / harmonized"),
+        ("arm_A_test_orig", "A orig"),
+        ("arm_A_test_harmonized", "A harm"),
+        ("arm_B_test_orig", "B orig"),
+        ("arm_B_test_harmonized", "B harm"),
     ]
     x = np.arange(len(conds))
-    seed_mix = [0.55, 0.78, 1.0]  # darker = later seed
-    for metric_name, metric_color, off in (
-        ("nonvehicle_recall", "#8e44ad", -0.19),
-        ("macro_f1", "#2980b9", 0.19),
+    fig.text(
+        0.75, 0.945,
+        "Format-shortcut check: original (PNG NonVehicles) vs "
+        "harmonized (JPEG q75)",
+        ha="center", fontsize=9,
+    )
+    markers = ["o", "s", "^"]
+    for axi, metric_name, title, ylim in (
+        (ax_r, "nonvehicle_recall", "NonVehicles recall", (0.96, 1.001)),
+        (ax_f, "macro_f1", "8-class macro-F1", (0.74, 0.83)),
     ):
-        base = np.array(matplotlib.colors.to_rgb(metric_color))
+        axi.set_title(title, fontsize=9)
+        axi.set_xticks(x)
+        axi.set_xticklabels([lbl for _, lbl in conds], fontsize=8,
+                            rotation=15)
+        axi.set_ylim(*ylim)
         for seed_i in range(3):
-            vals = [fmt[c][seed_i][metric_name] for c, _ in conds]
-            c = tuple(base * seed_mix[seed_i] + (1 - seed_mix[seed_i]))
-            ax.bar(
-                x + off + (seed_i - 1) * 0.12, vals, width=0.11, color=c,
-                edgecolor="white", linewidth=0.4,
+            vals = np.array([fmt[c][seed_i][metric_name] for c, _ in conds])
+            xs = x + (seed_i - 1) * 0.18
+            axi.scatter(
+                xs, vals, s=30, marker=markers[seed_i],
+                color=SEED_COLORS[seed_i], edgecolor="black", linewidth=0.4,
+                zorder=3, label=f"seed {seed_i}" if axi is ax_r else None,
             )
-    handles = [
-        plt.Rectangle((0, 0), 1, 1, color="#8e44ad", label="NonVehicles recall"),
-        plt.Rectangle((0, 0), 1, 1, color="#2980b9", label="8-class macro-F1"),
-    ]
-    base = np.array(matplotlib.colors.to_rgb("#2980b9"))
-    for seed_i, name in enumerate(["seed 0", "seed 1", "seed 2"]):
-        c = tuple(base * seed_mix[seed_i] + (1 - seed_mix[seed_i]))
-        handles.append(plt.Rectangle((0, 0), 1, 1, color=c, label=name))
-    ax.legend(handles=handles, fontsize=6.5, ncol=2, loc="lower left")
-    ax.set_xticks(x)
-    ax.set_xticklabels([lbl for _, lbl in conds], fontsize=8)
-    ax.set_ylim(0.7, 1.02)
-    ax.set_title("Format-shortcut check: harmonized vs original JPEG")
+        axi.grid(axis="y", alpha=0.3)
+    ax_r.legend(fontsize=7, loc="lower left")
 
     # (c) inflation demo: three scenarios x (accuracy, macro-F1).
-    ax = axes[1, 0]
+    ax = ax_c
     groups = [
         ("random / random test", infl["random_model_random_test"], "#7f8c8d"),
         ("random / clean subset", infl["random_model_clean_subset"], "#95a5a6"),
@@ -133,12 +140,12 @@ def main() -> None:
             ax.annotate(f"{v:.3f}", (xi, v + 0.006), ha="center", fontsize=8)
     ax.set_xticks(x)
     ax.set_xticklabels([g[0] for g in groups], fontsize=8)
-    ax.set_ylim(0.7, 1.0)
+    ax.set_ylim(0, 1.0)
     ax.set_title("Component-leakage inflation demo (single seed)")
     ax.legend(fontsize=8)
 
     # (d) per-class F1: custom A seed 0 vs pretrained seed 0.
-    ax = axes[1, 1]
+    ax = ax_d
     x = np.arange(len(names))
     for off, key, label, color in (
         (-0.19, "custom_A_s0", "Custom A s0", "#16a085"),
@@ -146,9 +153,11 @@ def main() -> None:
     ):
         vals = [test[key]["per_class"][c]["f1"] for c in names]
         ax.bar(x + off, vals, width=0.36, color=color, label=label)
+        for xi, v in zip(x + off, vals, strict=True):
+            ax.annotate(f"{v:.2f}", (xi, v + 0.015), ha="center", fontsize=7)
     ax.set_xticks(x)
     ax.set_xticklabels(names, fontsize=8, rotation=20)
-    ax.set_ylim(0.55, 1.02)
+    ax.set_ylim(0, 1.05)
     ax.set_title("Per-class F1, seed 0")
     ax.legend(fontsize=8)
 
