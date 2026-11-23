@@ -121,8 +121,8 @@ Mean ± sd over seeds: custom A accuracy 0.8765 ± 0.0040, macro-F1
 Seed-0 cluster-bootstrap 95% CIs (2,044 test components, 2,000
 resamples, seed 0): macro-F1 custom A [0.7784, 0.8140], custom B
 [0.7693, 0.8055], scratch [0.7893, 0.8239], pretrained [0.8351,
-0.8653]. The intervals are wide because Taxi (n = 113) and Van
-(n = 144) have small support.
+0.8653]. The intervals are wide, likely because Taxi (n = 113) and
+Van (n = 144) have small support.
 
 Paired bootstrap differences are stored as custom A minus the other
 model; below they are shown as other minus custom A (sign flipped):
@@ -144,25 +144,29 @@ vehicle-predicted-NonVehicles rate is at most 0.00077.
 The harmonized arm re-encodes PNG inputs to JPEG at the estimated
 quality 75 / 4:2:0. NonVehicles recall is essentially unchanged:
 custom A seed 0 scores 0.9985 on both the original and harmonized
-test sets (all seeds stay above 0.991). JPEG compression format is
-therefore not the cue the model uses for NonVehicles. The
-NonVehicles source difference (a Udacity/GTI-style origin versus the
-vehicle classes) remains a possible non-format shortcut, still only a
-hypothesis.
+test sets (all seeds stay above 0.991). The model trained on
+harmonized data also matches the original-format model: custom B
+minus custom A macro-F1 is -0.0078 [-0.0218, +0.0055]. JPEG
+compression format is therefore not the cue the model uses for
+NonVehicles. The NonVehicles source difference (a Udacity/GTI-style
+origin versus the vehicle classes) remains a possible non-format
+shortcut, still only a hypothesis.
 
 ### Leakage inflation
 
-There is no measurable inflation from the grouped split. The random
-split is a plain permutation (not stratified), so its test is
-easier in composition: the custom CNN trained on it scores accuracy
+There is no measurable inflation from the random image-level split.
+The random split is a plain permutation (not stratified), so its
+test set differs in composition from the grouped test: the custom
+CNN trained on it scores accuracy
 0.8643 and macro-F1 0.7709 on its own random test (n = 3,956),
 versus 0.8809 / 0.7961 for custom A on the grouped test. On the
 clean subset of the random test whose components never appear in the
 random train (n = 1,574 of 3,956; 60% of random-test images share a
 component with random train), the same model scores accuracy 0.9485
 and macro-F1 0.7542. The grouped model on the grouped test is the
-headline number. Headline difference (custom A minus random model on
-random test) is -0.0252 macro-F1: the grouped protocol does not
+headline number. Headline difference, stored as (a) minus (c): the
+random model on the random test (macro-F1 0.7709) minus custom A on
+the grouped test (0.7961) is -0.0252. The grouped protocol does not
 lower the score. Caveats: the three numbers come from different
 test sets, a single seed, and the random split is not
 class-stratified. A plausible reason the random split does not
