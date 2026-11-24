@@ -60,6 +60,42 @@ was 4,985 s). `results/` holds the unedited kernel output
 `image.png` renders from `results/` only via
 `uv run --with matplotlib python scripts/render_figure.py`.
 
+![Vehicle classification benchmark results: test macro-F1 per family, confusion matrices, format-shortcut check, inflation demo and per-class F1](image.png)
+
+### What the figure shows
+
+- (a) Test macro-F1 per family: pretrained ResNet-18 leads at
+  0.851-0.862 across seeds, ahead of scratch ResNet-18
+  (0.806-0.820) and both custom CNNs (about 0.79); the seed-0
+  cluster-bootstrap CI for pretrained is [0.835, 0.865].
+- (b) Row-normalized confusion matrix, Custom A (seed 0):
+  NonVehicles recall is a perfect 1.00, but Taxi (0.50), Van (0.58)
+  and Truck (0.68) are the weak classes, with Truck most often
+  confused into Car (59 cases).
+- (c) Row-normalized confusion matrix, ResNet-18 pretrained (seed
+  0): the same weak classes improve to Taxi 0.65, Van 0.72 and Truck
+  0.77, and NonVehicles stays perfect; the top remaining confusion is
+  Car into Truck (48 cases).
+- (d) Format-shortcut check, NonVehicles recall: every seed and both
+  image formats stay at 0.992-1.000, so harmonization does not hurt
+  the dominant class.
+- (e) Format-shortcut check, 8-class macro-F1: original and
+  harmonized test sets agree within about 0.001 per seed, ruling out
+  a JPEG-artifact shortcut.
+- (f) Component-leakage inflation demo: the custom CNN trained on
+  the ungrouped random split scores accuracy 0.864 and macro-F1 0.771
+  on its own test versus 0.881 and 0.796 on the grouped test; on the
+  clean subset it reaches 0.949 accuracy but only 0.754 macro-F1, so
+  the grouped numbers are not inflated by leakage.
+- (g) Per-class F1, seed 0: pretrained ResNet-18 beats Custom A on
+  all eight classes, with the largest gains on Truck (+0.095), Van
+  (+0.088) and Taxi (+0.082).
+
+Pretrained ResNet-18 is the clear winner on grouped test, the
+confusion matrices localize the remaining errors to Taxi, Van and
+Truck for both CNNs, and the format and leakage checks show the
+benchmark numbers are not inflated by shortcuts.
+
 ### Run history and gates
 
 - Smoke v1 failed at dataset discovery: Kaggle mounts datasets under
