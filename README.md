@@ -7,7 +7,7 @@ under a frozen leakage-controlled protocol on 26,378 vehicle images,
 with pHash component grouping, a format-harmonized arm and an
 inflation demo.
 
-![Vehicle classification benchmark results](image.png)
+![Vehicle classification results: test macro-F1 per family, confusion matrices, JPEG/PNG format-shortcut checks, leakage inflation demo and per-class F1](image.png)
 
 The figure follows the grouped test run: (a) test macro-F1 per
 family, (b)-(c) row-normalized confusion matrices for Custom A and
