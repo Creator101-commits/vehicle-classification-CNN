@@ -1,5 +1,7 @@
 # Vehicle Classification CNN
 
+> Sorting 26,378 vehicle photos into 8 classes: pretrained ResNet-18 reaches 0.86 macro-F1 on a leak-free split.
+
 Can small CNNs classify vehicle photos into eight classes without
 cheating on near-duplicate images or JPEG artifacts? This project
 trains a custom CNN, ResNet-18 from scratch and pretrained ResNet-18
