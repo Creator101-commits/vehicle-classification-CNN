@@ -1,6 +1,6 @@
 # Vehicle Classification CNN
 
-> Sorting 26,378 vehicle photos into 8 classes: pretrained ResNet-18 reaches 0.86 macro-F1 on a leak-free split.
+> Vehicle image classifier
 
 Can small CNNs classify vehicle photos into eight classes without
 cheating on near-duplicate images or JPEG artifacts? This project
@@ -33,11 +33,15 @@ mean ± sd over seeds 0/1/2; the CI is the seed-0 cluster bootstrap.
   +0.0718]; accuracy 0.9166 vs 0.8765.
 - **The format checks find no JPEG shortcut.** Custom B trained on
   harmonized images matches Custom A (macro-F1 -0.0078 [-0.0218,
-  +0.0055]) and NonVehicles recall stays 0.992-1.000 in both formats.
-- **There is no measurable leakage inflation, but see Notes.** The
-  random-split model scores macro-F1 0.7709 on its own test vs 0.7961
-  for Custom A on grouped test; on the clean subset its accuracy is
-  0.9485 but macro-F1 only 0.7542.
+  +0.0055]) and NonVehicles recall stays 0.992-1.000 in both formats;
+  the images may still differ in other ways, so this rules out a format
+  shortcut only.
+- **Leakage inflation is not measurable here, with a caveat.** The
+  comparison spans two different test sets at a single seed, so it is
+  one comparison and not proof of no inflation: the random-split model
+  scores macro-F1 0.7709 on its own test vs 0.7961 for Custom A on
+  grouped test; on the clean subset its accuracy is 0.9485 but macro-F1
+  only 0.7542.
 - **Remaining errors concentrate in Taxi, Van and Truck.** Custom A
   recalls them at 0.50, 0.58 and 0.68; pretrained improves to 0.65,
   0.72 and 0.77 while NonVehicles recall stays near 1.0, so the
@@ -54,6 +58,9 @@ seed 42, atomic over components -> JPEG forensics (quality 75, 4:2:0)
 metrics + format arm + random-split inflation demo + cluster bootstrap
 ```
 
+Dataset provenance and license are unknown (a local archive), and most
+models trained to the epoch limit.
+
 ## Run it
 
 ```bash
@@ -64,17 +71,3 @@ uv run mypy src
 scripts/kaggle_run.sh --smoke   # diagnostic kernel
 scripts/kaggle_run.sh           # full GPU kernel on Kaggle
 ```
-
-## Notes
-
-- The leakage comparison spans two different test sets at a single
-  seed, so it is one comparison, not proof of no inflation.
-- The PNG-to-JPEG test found no format shortcut, but the NonVehicles
-  images may still differ from vehicle photos in other ways (a
-  different source collection is only a hypothesis).
-- Most models trained to the epoch limit: best epochs cluster at the
-  end of the cosine schedule, so results are for these fixed budgets.
-- Dataset provenance and license are unknown (local archive); protocol
-  `vehicle-cnn-benchmark-v1`, split seed 42, model seeds 0/1/2,
-  bootstrap seed 0. `results/` is unedited kernel output and
-  `image.png` renders from it.
